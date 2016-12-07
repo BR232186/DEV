@@ -1,9 +1,9 @@
 clear
-n = 150; % number of time steps
+n = 1000; % number of time steps
 
 eps = zeros(n,6); % [eps_11 eps_22 eps_33 eps_12 eps_23 eps_31]
 
-deps = [1 0 0 0 0 0]*10^-5; % increment of strain
+deps = [1 1 1 0 0 0]*10^-5; % increment of strain
 
 sig = zeros(n,6); %total stress matrix as per voight's sign convention [sig_11 sig_22 sig_33 sig_12 sig_23 sig_31]
 
@@ -34,17 +34,17 @@ C_D = zeros(n,size(P,1));%53.125; % modulus of sig_D vs. eps_D
 
 C_T = zeros(n,size(P,1));%; % modulus of sig_T vs. eps_T
 
-a1 = 1.e-4;
+a1 = 5*1.e-4;
 
-a2 = 1.e-2;
+a2 = 1.e-3;
 
-a3 = 1.e-3;
+a3 = 5*1.e-3;
 
-a4 = 1.e-1;
+a4 = 1.e-2;
 
 a5 = 0.0018;
 
-a6 = 0.18;
+a6 = 2*0.0018;
 
 for s = 1:n %loop on all the time steps
     
@@ -56,9 +56,9 @@ for s = 1:n %loop on all the time steps
 
     for alpha = 1: size(P,1) %loop on all the integration points
     
-    eps_n(s,alpha) = P(alpha,:)*[eps(s,1) eps(s,4) eps(s,6); 
-                                     eps(s,4) eps(s,2) eps(s,5); 
-                                     eps(s,6) eps(s,5) eps(s,3)]*P(alpha,:)'; %normal strain on the considered microplane
+   eps_n(s,alpha) = P(alpha,:)*[eps(s,1) eps(s,4)/2. eps(s,6)/2.; 
+                                            eps(s,4)/2. eps(s,2) eps(s,5)/2.; 
+                                            eps(s,6)/2. eps(s,5)/2. eps(s,3)]*P(alpha,:)'; %normal on the considered microplane
                                         
         eps_V(s,alpha) = (eps(s,1)+eps(s,2)+eps(s,3))/3; %sum(P(alpha,:)*[eps(s,1) eps(s,4) eps(s,6); 
 %                                          eps(s,4) eps(s,2) eps(s,5); 
