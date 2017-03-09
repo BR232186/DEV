@@ -1,0 +1,328 @@
+C SORTIR    SOURCE    PV        12/12/06    21:15:27     7594
+C  SORTIE DE GIBI
+C  CE SOUS PROGRAMME PREPARE LE FICHIER DE SORTIE DE GIBI
+C  IL COMMENCE PAR EFFACER LES ENREGISTREMENTS DE MEME NOM
+C  DANS LE FICHIER DE COMMUNICATION  (A FAIRE)
+C  PUIS ECRIT UN ENREGISTREMENT (IMAGE DE CARTES) DONT LE
+C  NOM EST LE NOM D L'OBJET A PERFORER
+C
+      SUBROUTINE SORTIR(MELEME)
+      IMPLICIT INTEGER(I-N)
+-INC CCOPTIO
+-INC SMELEME
+-INC CCGEOME
+-INC SMCOORD
+-INC TMLCHA8
+      SEGMENT JSGTR(0)
+      SEGMENT CSGT
+         CHARACTER*8 CSGTR(0)
+      ENDSEGMENT
+      SEGMENT ISGT
+         INTEGER ISGTR(0)
+      ENDSEGMENT
+      SEGMENT ILIST(ILL)
+      SEGMENT ITLAC(0)
+      POINTEUR ITLAC1.ITLAC
+      CHARACTER*8 NOBJ
+      CHARACTER*(8) CHAR
+      CHARACTER*4 BLAN
+
+      DATA BLAN /'    '/
+
+      SEGINI ITLAC
+      CALL QUENOM(NOBJ)
+      REWIND IOPER
+      SEGACT MELEME
+      CALL AJOU(ITLAC,MELEME)
+      IF(LISOUS(/1).NE.0) THEN
+         DO 2 I=1,LISOUS(/1)
+            IVAL=LISOUS(I)
+            CALL AJOU(ITLAC,IVAL)
+    2    CONTINUE
+      ENDIF
+      CALL TASSPO(ITLAC,icolac,ipt8,0)
+      segini,ITLAC1=ITLAC
+      CALL SUPPIL(ICOLAC,-1)
+      ITLAC=ITLAC1
+      segsup ipt8
+      IF (IERR.NE.0) RETURN
+
+C LES POINTS SONT CLASSES AVEC EN TETE CEUX DE L'OBJET QUI NOUS
+C INTERESSE
+C RECHERCHONS LE PLUS GRAND POINT A SORTIR
+CG    Déja activé....
+CG      SEGACT MCOORD
+      SEGACT MELEME
+      IMAX=0
+      DO 5 IK=1,MAX(1,LISOUS(/1))
+         IF (LISOUS(/1).NE.0)THEN
+            IPT1=LISOUS(IK)
+            SEGACT IPT1
+         ELSE
+            IPT1=MELEME
+         ENDIF
+         DO 3 J=1,IPT1.NUM(/2)
+            DO 31 I=1,IPT1.NUM(/1)
+               IMAX=MAX(IMAX,IPT1.NUM(I,J))
+ 31         CONTINUE
+   3     CONTINUE
+         IF (LISOUS(/1).NE.0) SEGDES IPT1
+   5  CONTINUE
+      SEGDES MELEME
+C  ICI IL FAUDRA RENUMEROTER D'APRES OBJET LES POINTS JUSQU'A IMAX
+C  ECRITURE DES ENREGISTREMENTS.POSITIONNEMENT A FAIRE QUAND ON SAURA
+C  COMMENT EST FAIT LE FICHIER
+C  PREMIER ENREGISTREMENT
+
+C-----------------------------------------------------------------------
+C NOM OBJET A SORTIR
+C-----------------------------------------------------------------------
+
+      WRITE (IOPER,777)
+  777 FORMAT ('$NOM_OBJET')
+      WRITE (IOPER,100) NOBJ
+  100 FORMAT (A8)
+  
+C-----------------------------------------------------------------------
+C PARAMETRES - DIMENSION ET DENSITE
+C-----------------------------------------------------------------------
+
+      WRITE (IOPER,9020)
+ 9020 FORMAT ('$DIMENSION')
+      WRITE (IOPER,9022) IDIM
+ 9022 FORMAT(I4)
+      WRITE (IOPER,9028)
+ 9028 FORMAT ('$DENSITE')
+      WRITE (IOPER,9021) DENSIT
+ 9021 FORMAT(1PE12.5)
+ 
+C-----------------------------------------------------------------------
+C LES COORDONNEES DES NOEUDS
+C-----------------------------------------------------------------------
+
+       WRITE(IOPER,703)
+  703 FORMAT ('$NOEUDS')
+       WRITE(IOPER,793) IMAX
+  793 FORMAT (I8)
+C        print*,'idim=',idim
+C        stop
+       ILONG=(IDIM+1)*IMAX
+       
+        IF (IDIM.EQ.2) THEN 
+        WRITE (IOPER,104) (XCOOR(I),I=1,ILONG)
+ 104    FORMAT (1P,3E20.5)
+        ELSEIF (IDIM.EQ.3) THEN
+        WRITE (IOPER,611) (XCOOR(I),I=1,ILONG)
+ 611    FORMAT (1P,4E20.5)
+        ENDIF
+        
+      
+      SEGINI CSGT,ISGT
+      CALL REPERT('POINT   ',ITITI)
+      IF(ITITI.NE.0) THEN
+         CALL REPLIS('POINT   ',MLCHA8)
+         ICO=1
+         DO 11 I=1,ITITI
+            CALL LIROBJ('POINT   ',IP1,1,IRETOU)
+            IF(IERR.NE.0) RETURN
+            IF (IP1.EQ.0) GOTO 11
+            IF(IP1.GT.IMAX) GOTO 11
+            ISGTR(**)=IP1
+            CSGTR(**)=MLCHAR(I)
+            ICO=ICO+3
+  11     CONTINUE
+         SEGSUP MLCHA8
+  12  ENDIF
+  
+C-----------------------------------------------------------------------
+C LES POINTS NOMMES
+C-----------------------------------------------------------------------
+
+      ILONG=ISGTR(/1)
+      WRITE (IOPER,105)
+ 105  FORMAT('$POINTS_NOMMES')
+      WRITE (IOPER,779) ILONG
+ 779  FORMAT(I8)
+      IF (ILONG.NE.0) THEN
+         DO I=1,ILONG
+         WRITE (IOPER,106) CSGTR(I)
+ 106     FORMAT (A8)
+         WRITE (IOPER,909) ISGTR(I)
+ 909     FORMAT (I8)
+         ENDDO
+  50  ENDIF
+
+C-----------------------------------------------------------------------
+C LES OBJETS
+C-----------------------------------------------------------------------
+
+      SEGSUP ISGT,CSGT
+      SEGINI JSGTR
+      CALL QUIDAN(JSGTR,ITLAC,IMAX)
+      SEGSUP ITLAC
+
+      ILONG=JSGTR(/1)
+      WRITE (IOPER,107)
+ 107  FORMAT('$OBJETS')
+      WRITE (IOPER,157) ILONG
+ 157  FORMAT(I8)
+      DO 20 I=1,ILONG
+         MELEME=JSGTR(I)
+         SEGACT MELEME*MOD
+         IF (IONIVE.LE.1) THEN
+
+         IF (ITYPEL.EQ.0) THEN
+       WRITE (IOPER,108) 'COMP',LISOUS(/1),NUM(/1),NUM(/2)
+            ELSE
+       WRITE (IOPER,108) NOMS(ITYPEL),LISOUS(/1),NUM(/1),
+     #  NUM(/2)
+            ENDIF
+         ELSE
+C             print*,'NOMS=',(NOMS(J),J=1,25)
+C             print*,'ITYPEL',ITYPEL
+C             print*,'NOM_ITYPEL',NOMS(ITYPEL)
+C             stop
+
+         IF (ITYPEL.EQ.0) THEN
+           WRITE (IOPER,1108) 'COMP',LISOUS(/1),NUM(/1),NUM(/2)
+            ELSE
+       WRITE (IOPER,1108) NOMS(ITYPEL),LISOUS(/1),NUM(/1),
+     #  NUM(/2)
+            ENDIF
+         ENDIF
+ 108  FORMAT(A4,' SOUS_OBJETS ',I4,' NB_NOEUDS ',I8,' NB_ELEM ',I8)
+1108  FORMAT(A4,' SOUS_OBJETS ',I4,' NB_NOEUDS ',I8,' NB_ELEM ',I8)
+           
+         IF (LISOUS(/1).NE.0) THEN
+            ILL=LISOUS(/1)
+            SEGINI ILIST
+            DO 22 J=1,LISOUS(/1)
+               JOB=LISOUS(J)
+               DO 23 K=1,JSGTR(/1)
+                  IF (JOB.EQ.JSGTR(K)) GOTO 24
+  23           CONTINUE
+               CALL ERREUR(9)
+               RETURN
+  24           ILIST(J)=K
+  22        CONTINUE
+            WRITE (IOPER,109) (ILIST(L),L=1,ILL)
+ 109        FORMAT (1I8)
+            SEGSUP ILIST
+  21     ENDIF
+              
+         NBNN=NUM(/1)
+         NBELEM=NUM(/2)
+         IF (NBNN*NBELEM.EQ.0) GOTO 30
+         IF (IONIVE.NE.0)   THEN
+            DO 1140 L1= 1,NBELEM
+               IF(ICOLOR(L1).EQ.0) ICOLOR(L1)=IDCOUL
+ 1140       CONTINUE
+
+         ENDIF
+         
+C-----------------------------------------------------------------------
+C SWITCH SELON LE TYPE D ELEMENT FINIS POUR AVOIR DES LIGNES
+c BALISE DE COULEUR (DEFA....)
+C-----------------------------------------------------------------------
+         IF (ITYPEL.EQ.2) THEN
+         WRITE (IOPER,9992) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9992    FORMAT (2I8)
+         ELSEIF (ITYPEL.EQ.1) THEN
+         WRITE (IOPER,9991) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9991    FORMAT (1I8)
+         ELSEIF (ITYPEL.EQ.3) THEN
+         WRITE (IOPER,9993) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9993    FORMAT (3I8)
+         ELSEIF  (ITYPEL.EQ.4) THEN
+         WRITE (IOPER,9994) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9994    FORMAT (3I8)
+         ELSEIF  (ITYPEL.EQ.6) THEN
+         WRITE (IOPER,9996) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9996    FORMAT (6I8)
+         ELSEIF  (ITYPEL.EQ.8) THEN
+         WRITE (IOPER,9998) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9998    FORMAT (4I8)
+         ELSEIF  (ITYPEL.EQ.10) THEN
+         WRITE (IOPER,9910) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9910    FORMAT (8I8)
+         ELSEIF  (ITYPEL.EQ.14) THEN
+         WRITE (IOPER,9914) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9914    FORMAT (8I8)
+         ELSEIF  (ITYPEL.EQ.15) THEN
+         WRITE (IOPER,9915) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9915    FORMAT (20I8)
+         ELSEIF  (ITYPEL.EQ.16) THEN
+         WRITE (IOPER,9916) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9916    FORMAT (6I8)
+         ELSEIF  (ITYPEL.EQ.17) THEN
+         WRITE (IOPER,9917) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9917    FORMAT (15I8)
+         ELSEIF  (ITYPEL.EQ.23) THEN
+         WRITE (IOPER,9923) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9923    FORMAT (4I8)
+         ELSEIF  (ITYPEL.EQ.25) THEN
+         WRITE (IOPER,9123) ((NUM(L1,L2),L1=1,NBNN),L2=1,NBELEM)
+ 9123    FORMAT (5I8)
+         ENDIF
+ 
+  30     CONTINUE
+         SEGDES MELEME
+  20  CONTINUE
+
+C-----------------------------------------------------------------------
+C LES OBJETS NOMMES
+C-----------------------------------------------------------------------
+      ILL=JSGTR(/1)*3
+      SEGINI ILIST
+      ICO=0
+      CALL REPERT('MAILLAGE',ITITI)
+      CALL REPLIS('MAILLAGE',MLCHA8)
+      SEGACT MLCHA8
+      DO 40 I=1,ITITI
+         CALL LIROBJ('MAILLAGE',IOB,1,IRETOU)
+         IF(IERR.NE.0) RETURN
+         IF (IOB.EQ.0) GOTO 40
+         DO 41 J=1,JSGTR(/1)
+            IF (IOB.EQ.JSGTR(J)) GOTO 42
+  41     CONTINUE
+         GOTO 40
+  42     CONTINUE
+         IF (ICO+3.GT.ILIST(/1)) THEN
+            ILIST(**)=0
+            ILIST(**)=0
+            ILIST(**)=0
+  43     ENDIF
+         ICO=ICO+1
+         READ(MLCHAR(I),FMT='(2A4)')ILIST(ICO),ILIST(ICO+1)
+         ICO=ICO+2
+         ILIST(ICO)=J
+  40  CONTINUE
+
+      ILONG=ICO/3
+      WRITE (IOPER,789)
+ 789  FORMAT('$OBJETS_NOMMES')
+      WRITE (IOPER,798) ILONG
+ 798  FORMAT(I8)
+
+      WRITE (IOPER,113) (ILIST(I),I=1,ICO)
+ 113  FORMAT (1(2A4,I8))
+
+      SEGSUP ILIST,JSGTR
+      RETURN
+      END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

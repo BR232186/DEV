@@ -1,0 +1,78 @@
+OPTI DIME 2 ELEM QUA4 EPSILON LINEAIRE;
+DENS 0.1;
+
+
+Happui = 1.50;
+Htot = Happui +(2.*0.15);
+phiacier = phi12;
+secacier = sec12;
+hgthc = 0.20;
+wdthc = 0.10;
+epenro = 0.020;
+*
+*-------------------------------------------------------------------------
+*    Maillage fibre acier - supérieur
+*-------------------------------------------------------------------------
+CA1  = (((-0.5)*wdthc) + epenro) ((-0.5*hgthc) + epenro) ;
+CA2  = ((0.5*wdthc) - epenro) ((-0.5*hgthc) + epenro) ;
+SAINF = CA1 ET CA2;
+ 
+CA3  = (((-0.5)*wdthc) + epenro) ((0.5*hgthc) - epenro) ;
+CA4  = ((0.5*wdthc) - epenro) ((0.5*hgthc) - epenro) ;
+SASUP = CA3 ET CA4;
+ 
+SACIER = (SAINF COUL ROSE) et (SASUP COUL ROUGE);
+ 
+ 
+*-----------------------------------------------------------------------
+*    Description du coffrage poteau et des sections BA correspondantes.
+*-----------------------------------------------------------------------
+P1 = -1 -1;
+P2 =  1 -1;
+P3 =  1  1;
+P4 = -1  1;
+
+L1 = DROI 25 P1 P2;
+L2 = DROI 25 P2 P3;
+L3 = DROI 25 P3 P4;
+L4 = DROI 25 P4 P1;
+
+LT = L1 ET L2 ET L3 ET L4;
+SBET = SURF LT PLAN;
+
+SBET  = ORIE SBET;
+trac sbet;
+OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV\sec_bet.mail';
+SORT SBET;
+opti dime 3;
+
+modBC = MODE sBET MECANIQUE ELASTIQUE ISOTROPE QUAS;
+matBC = MATE modBC 'YOUN' 210000e6  'NU' 0.2 ;
+carBC = CARA modBC ALPY (.83) ALPZ (.83);
+matBC = matBC et carBC;
+
+P1 = 0   0 0;
+P2 = 0.5 0 0;
+LT = DROI 10 P1 P2;
+OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV\seg2.mail';
+SORT LT;
+
+modpout = MODE LT MECANIQUE ELASTIQUE SECTION PLASTIQUE SECTION TIMO;
+matpout = MATE modpout MODS modBC MATS matBC VECT (0 1 0);
+cl1 = bloq p1 depl rota;
+
+toto = HOOK modpout matpout;
+list toto;
+list modpout;
+rig1 = RIGI modpout matpout;
+fo1  = FORC (MANU POI1 P2) (0 10e3 0) ;
+list fo1;
+usol = RESO (rig1 et cl1) fo1;
+eps0 = EPSI usol modpout matpout;
+sig0 = ELAS modpout eps0 matpout;
+for0 = BSIG modpout sig0 matpout;
+list for0;
+tutu = extr usol p2 uy;
+list tutu;
+
+FIN;
