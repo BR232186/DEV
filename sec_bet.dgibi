@@ -23,6 +23,8 @@ SASUP = CA3 ET CA4;
  
  
 SACIER = (SAINF COUL ROSE) et (SASUP COUL ROUGE);
+*SACIER = 0.01 0.01;
+*SACIER = MANU POI1 SACIER; 
  
  
 *-----------------------------------------------------------------------
@@ -42,7 +44,7 @@ LT = L1 ET L2 ET L3 ET L4;
 SBET = SURF LT PLAN;
 
 SBET  = ORIE SBET;
-trac (sbet et sacier);
+*trac (sbet et sacier);
 OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\sec_bet.mail';
 SORT (SBET et sacier);
 
@@ -51,15 +53,15 @@ opti dime 3;
 modBC = MODE sBET MECANIQUE ELASTIQUE ISOTROPE QUAS;
 matBC = MATE modBC 'YOUN' 36000e6  'NU' 0.2 ;
 carBC = CARA modBC ALPY (.83) ALPZ (.83);
-modAC = MODE (SAINF ET SASUP) MECANIQUE ELASTIQUE ISOTROPE POJS;
+modAC = MODE (SACIER) MECANIQUE ELASTIQUE ISOTROPE POJS;
 matAC = MATE modAC 'YOUN' 210000e6  'NU' 0.3 ;
-carAC = CARA modAC ALPY (.83) ALPZ (.83) SECT 1;
+carAC = CARA modAC ALPY (0) ALPZ (0) SECT 0 ;
 
 matBC = matBC et carBC;
 matAC = matAC et carAC;
 
 P1 = 0   0 0;
-P2 = 0.5 0 0;
+P2 = 0.5   0 0;
 LT = DROI 10 P1 P2;
 OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\seg2.mail';
 SORT LT;
@@ -70,14 +72,15 @@ matpout = MATE modpout MODS (modBC et modac) MATS (matBC et matac)
 cl1 = bloq p1 depl rota;
 
 
-*toto = HOOK modpout matpout;
+toto = HOOK modpout matpout;
+list toto;
 rig1 = RIGI modpout matpout;
 fo1  = FORC (MANU POI1 P2) (0 10e3 0) ;
 usol = RESO (rig1 et cl1) fo1;
-*eps0 = EPSI usol modpout matpout;
-*sig0 = ELAS modpout eps0 matpout;
-*for0 = BSIG modpout sig0 matpout;
+eps0 = EPSI usol modpout matpout;
+sig0 = ELAS modpout eps0 matpout;
+for0 = BSIG modpout sig0 matpout;
 tutu = extr usol p2 uy;
 list tutu;
 
-FIN;
+fin;

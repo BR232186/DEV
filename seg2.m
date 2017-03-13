@@ -24,19 +24,21 @@ FILE = 'sec_bet.mail';
 ME   = INPUT.ACQU(FILE,'MAIL');
 
 %% Definition of the model
-MO1  = MODEL('SBET','MECHANICS','ELASTICITY','ISOTROPIC','QUAS');
+MO1  = MODEL('SBET' ,'MECHANICS','ELASTICITY','ISOTROPIC','QUAS');
 MO2  = MODEL('SAINF','MECHANICS','ELASTICITY','ISOTROPIC','POJS');
 MO3  = MODEL('SASUP','MECHANICS','ELASTICITY','ISOTROPIC','POJS');
 MOT  = [MO1 [MO2 MO3]];
+% MOT  = [MO1 [MO2]];
 
 %% Definition of the material
 MA1  = CHAMELEM.MATE(MO1,'youn',36000e6,'nu',0.2,'rho',...
     2500,'ay',0.83,'az',0.83);
 MA2  = CHAMELEM.MATE(MO2,'youn',210000e6,'nu',0.3,'rho',...
-    2500,'sect',1);
+    2500,'sect',0);
 MA3  = CHAMELEM.MATE(MO3,'youn',210000e6,'nu',0.3,'rho',...
-    2500,'sect',1);
+    2500,'sect',0);
 MAT  = [MA1 [MA2 MA3]];
+% MAT  = [MA1 [MA2]];
 
 %% Definition of the beam
 FILE = 'seg2.mail';
