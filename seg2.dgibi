@@ -17,7 +17,7 @@ P1 = 0 0 0;
 P2 = 1 0 0;
 LT = DROI 1 P1 P2;
 
-*TRAC LT;
+TRAC LT;
 OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV\seg2.mail';
 SORT LT;
 
