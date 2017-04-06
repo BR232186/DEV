@@ -1,0 +1,11 @@
+* *****************************
+* NOM1 PRENOM1 MAIL1
+* NOM2 PRENOM2 MAIL2
+* TITRE
+* ANNEE
+* PROMOTION
+* GROUPE
+* *****************************
+OPTI DIME 3 ELEM PRI6 MODE TRID ECHO 1;
+DENS 0.01;
+
