@@ -1,0 +1,23 @@
+$NOM_OBJET
+LT      
+$DIMENSION
+   3
+$DENSITE
+ 1.00000E-01
+$NOEUDS
+       2
+         1.00000E+00         0.00000E+00         0.00000E+00         1.00000E-01
+         0.00000E+00         0.00000E+00         0.00000E+00         1.00000E-01
+$POINTS_NOMMES
+       2
+P2      
+       1
+P1      
+       2
+$OBJETS
+       1
+SEG2 SOUS_OBJETS    0 NB_NOEUDS        2 NB_ELEM        1
+       2       1
+$OBJETS_NOMMES
+       1
+LT             1

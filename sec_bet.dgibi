@@ -45,8 +45,8 @@ SBET = SURF LT PLAN;
 
 SBET  = ORIE SBET;
 *trac (sbet et sacier);
-OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\sec_bet.mail';
-SORT (SBET et sacier);
+*OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\sec_bet.mail';
+*SORT (SBET et sacier);
 
 opti dime 3;
 
@@ -63,8 +63,8 @@ matAC = matAC et carAC;
 P1 = 0   0 0;
 P2 = 0.5   0 0;
 LT = DROI 10 P1 P2;
-OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\seg2.mail';
-SORT LT;
+*OPTI SORT 'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\seg2.mail';
+*SORT LT;
 
 modpout = MODE LT MECANIQUE ELASTIQUE SECTION PLASTIQUE SECTION TIMO;
 matpout = MATE modpout MODS (modBC et modac) MATS (matBC et matac)
