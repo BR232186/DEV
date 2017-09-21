@@ -1,0 +1,123 @@
+*******************************************************
+***            Geométrie TRI3 - PLAQ             	***
+*******************************************************
+OPTI DIME 3 ELEM TRI3 TRAC OPEN;
+DENSITE 0.01;
+*******************************************************
+***            Geométrie TRI3 - PLAQ             	***
+*******************************************************
+* Benjamin RICHARD
+* Vincent LELOUCHE
+*******************************************************
+* PARAMETRES GEOMETRIQUES GENERAUX
+*******************************************************
+
+P1 = 0 0 0;
+P2 = 1 0 0;
+P3 = 1 1 0;
+P4 = 0 1 0;
+L1 = DROI 1 P1 P2;
+L2 = DROI 1 P2 P3;
+L3 = DROI 1 P3 P4;
+L4 = DROI 1 P4 P1;
+LT = L1 ET L2 ET L3 ET L4;
+ST = SURF LT PLAN;
+ST = ORIE ST;
+
+TRAC ST;
+OPTI SORT 
+'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\tri3_plaq.mail';
+SORT ST;
+
+FIN;
+
+CL1 = BLOQ UX P1;
+CL2 = BLOQ UY LT;
+CLT = CL1 ET CL2;
+
+MO1 = MODE LT MECANIQUE ELASTIQUE ISOTROPE BARRE;
+MA1 = MATE MO1 YOUN 1 NU 0.25 RHO 1 SECT 1;
+
+Freq  = 1/(2*pi);
+Peri  = 1/Freq;
+LIST freq;
+LIST Peri;
+
+LI1 = PROG 0 0.1 0.2 100;
+LI2 = PROG 0 0.1 0   0;
+
+EV1 = EVOL MANU LI1 LI2;
+*DESS EV1;
+MAS1 = MASS P2 UX 1;
+MAS2 = MASS MO1 MA1;
+MAST = MAS1 ET MAS2;
+
+RIG1 = RIGI MO1 MA1;
+
+CHP1 = MANU CHPO LT 1 UX 1;
+F01  = -1.0 * MAST * CHP1;
+CH1  = CHAR MECA F01 EV1;
+
+LIS1 = PROG 0 PAS 0.01 20;
+
+TABDYN = TABLE;
+TABDYN . MODELE = MO1 ;
+TABDYN . CARACTERISTIQUES = MA1 ;
+TABDYN . MASSE_CONSTANTE = MAS1; ;
+TABDYN . CHARGEMENT = CH1 ;
+TABDYN . BLOCAGES_MECANIQUES = CLT; 
+TABDYN . TEMPS_CALCULES = LIS1;
+TABDYN . DYNAMIQUE = VRAI; 
+*TABDYN . AMORTISSEMENT = 1e-4*RIG1;
+PASAPAS TABDYN;
+
+NN = DIME TABDYN.DEPLACEMENTS;
+NN = NN - 1;
+
+I = 0;
+REPE BOU1 NN;
+I = I + 1;
+LIST I;
+LIST (EXTR TABDYN.DEPLACEMENTS.I UX P2);
+LIST (EXTR TABDYN.VITESSES.I UX P2);
+LIST (EXTR TABDYN.ACCELERATIONS.I UX P2);
+MESS '----';
+FIN BOU1;
+LIST TABDYN.DEPLACEMENTS.2;
+
+I = 0;
+UTEST = PROG 0;
+VTEST = PROG 0;
+ATEST = PROG 0;
+
+REPETER BOU1 (NN);
+I = I + 1;
+UTEST = UTEST ET (PROG (EXTR TABDYN.DEPLACEMENTS.I UX P2));
+VTEST = VTEST ET (PROG (EXTR TABDYN.VITESSES.I UX P2));
+ATEST = ATEST ET (PROG (EXTR TABDYN.ACCELERATIONS.I UX P2));
+FIN BOU1;
+
+LTP2 = LIS1;
+
+EVDP = EVOL BLEU MANU (LTP2) UTEST;
+EVVP = EVOL BLEU MANU (LTP2) VTEST;
+EVAP = EVOL BLEU MANU (LTP2) ATEST;
+
+OPTI DONN 5;
+
+DESS EVDP;
+DESS EVVP;
+DESS EVAP;
+
+
+
+
+
+
+
+
+
+
+
+
+FIN;
