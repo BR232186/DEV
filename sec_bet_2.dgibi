@@ -23,6 +23,7 @@ SASUP = CA3 ET CA4;
  
  
 SACIER = (SAINF COUL ROSE) et (SASUP COUL ROUGE);
+opti donn 5;
 *SACIER = 0.01 0.01;
 *SACIER = MANU POI1 SACIER; 
  
@@ -35,10 +36,10 @@ P2 =  1 -1;
 P3 =  1  1;
 P4 = -1  1;
 
-L1 = DROI 1 P1 P2;
-L2 = DROI 1 P2 P3;
-L3 = DROI 1 P3 P4;
-L4 = DROI 1 P4 P1;
+L1 = DROI 25 P1 P2;
+L2 = DROI 25 P2 P3;
+L3 = DROI 25 P3 P4;
+L4 = DROI 25 P4 P1;
 
 LT = L1 ET L2 ET L3 ET L4;
 SBET = SURF LT PLAN;
@@ -52,19 +53,21 @@ SBET  = ORIE SBET;
 
 opti dime 3;
 
-modBC = MODE sBET MECANIQUE ELASTIQUE ISOTROPE QUAS;
-matBC = MATE modBC 'YOUN' 36000e6  'NU' 0.2 ;
+
+modBC = MODE sBET MECANIQUE ELASTIQUE PLASTIQUE MAZARS QUAS;
+matBC = MATE modBC 'YOUN' 36000e6 NU 0.2 ATRA 0.8 ACOM 1.2 BTRA
+15000 BETA 1.06 BCOM 1500 KTR0 1.0e-4;
 carBC = CARA modBC ALPY (.83) ALPZ (.83);
-modAC = MODE (SACIER) MECANIQUE ELASTIQUE ISOTROPE POJS;
-matAC = MATE modAC 'YOUN' 210000e6  'NU' 0.3 ;
-carAC = CARA modAC ALPY (0) ALPZ (0) SECT 0 ;
+*modAC = MODE (SACIER) MECANIQUE ELASTIQUE ISOTROPE POJS;
+*matAC = MATE modAC 'YOUN' 210000e6  'NU' 0.3 ;
+*carAC = CARA modAC ALPY (0) ALPZ (0) SECT 0 ;
 
 matBC = matBC et carBC;
-matAC = matAC et carAC;
+*matAC = matAC et carAC;
 
 P1 = 0   0 0;
-P2 = 1   0 0;
-LT = DROI 1 P1 P2;
+P2 = 0.5   0 0;
+LT = DROI 10 P1 P2;
 *OPTI SORT 
 *'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\seg2_2.mail';
 *SORT LT;
@@ -73,25 +76,26 @@ modpout = MODE LT MECANIQUE ELASTIQUE SECTION PLASTIQUE SECTION TIMO;
 matpout = MATE modpout MODS (modBC ) MATS (matBC )
  VECT (0 1 0);
 cl1 = bloq p1 depl rota;
-toto = HOOK modpout matpout;
-list toto;
+cl2 = bloq P2 UX;
+*toto = HOOK modpout matpout;
+*list toto;
 rig1 = RIGI modpout matpout;
-fo1  = FORC (MANU POI1 P2) (0 100 0) ;
-usol = RESO (rig1 et cl1) fo1;
-eps0 = EPSI usol modpout matpout;
-sig0 = ELAS modpout eps0 matpout;
-for0 = BSIG modpout sig0 matpout;
-tutu = extr usol p2 uy;
-list tutu;
+fo1  = DEPI CL2 1.0;
+*usol = RESO (rig1 et cl1) fo1;
+*eps0 = EPSI usol modpout matpout;
+*sig0 = ELAS modpout eps0 matpout;
+*for0 = BSIG modpout sig0 matpout;
+*tutu = extr usol p2 uy;
+*list tutu;
 
-opti donn 5;
+*opti donn 5;
 
-ev1 = EVOL MANU (prog 0 1) (prog 0 1);
-chpzm = char MECA FO1 ev1;
+ev1 = EVOL MANU (prog 0 1) (prog 0 1.0e-3);
+chpzm = char DIMP FO1 ev1;
 
 TAB1 = TABLE;
-TAB1 . TEMPS_CALCULES      = prog 0 1;
-TAB1 . BLOCAGES_MECANIQUES = cl1;
+TAB1 . TEMPS_CALCULES      = prog 0 PAS 1.0e-2 1.0;
+TAB1 . BLOCAGES_MECANIQUES = cl1 et cl2;
 TAB1 . MODELE              = modpout;
 TAB1 . CARACTERISTIQUES    = matpout;
 TAB1 . CHARGEMENT          = chpzm ;
@@ -99,6 +103,10 @@ TAB1 . PRECISION           = 1.E-4  ;
 TAB1 . MOVA                = RIEN   ;
  
 PASAPAS TAB1;
+
+ev2 = @global tab1 ev1 cl2 fx;
+dess ev2;
+
 
 dep0 = tab1.deplacements.1;
 var0 = tab1.variables_internes.1;

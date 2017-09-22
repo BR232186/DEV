@@ -26,7 +26,8 @@ global options ME TP;
 options.mode = 'TRID';
 
 %% Loading of the input datafile
-FILE  = 'tri3_plaq.mail';
+% FILE  = 'tri3_plaq.mail';
+FILE  = 'tri3_plaq_T3G.mail';
 ME = INPUT.ACQU(FILE,'MAIL');
 
 %% Definition of the model
@@ -36,7 +37,9 @@ MO1  = MODEL('ST','MECHANICS','ELASTICITY','ISOTROPIC',[],[],'T3G');
 TP   = TOPOLOGY(MO1);
 
 %% Definition of the material
-MA1  = CHAMELEM.MATE(MO1,'youn',12e9,'nu',0.2,'rho',50e3,'epai',0.1);
+MA1  = CHAMELEM.MATE(MO1,'youn',1,'nu',0.25,'rho',1,'epai',1);
+
+KE   = MATRICE('STIFF',MO1,MA1);
 
 %% Boundary conditions
 % Line L1 fixed
