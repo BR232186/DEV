@@ -39,15 +39,38 @@ TP   = TOPOLOGY(MO1);
 %% Definition of the material
 MA1  = CHAMELEM.MATE(MO1,'youn',1,'nu',0.25,'rho',1,'epai',1);
 
-KE   = MATRICE('STIFF',MO1,MA1);
-
 %% Boundary conditions
 % Line L1 fixed
-CL1  = MATRICE('DIRI','L1',1,2,3,4,5);
+CL1  = MATRICE('DIRI','L1',1,2,3,4,5,6);
 CLT  = CL1;
+RIG1 = MATRICE('STIFF',MO1,MA1);
+RIGT = [RIG1 CL1];
 
 % Definition of a prescribed displacement
-FO1  = CHPOINT('LABEL','L3',1,-5e5);
+FOT  = CHPOINT('LABEL','P3',1,1);
+
+% Static analysis
+USOL = SOLVERS.RESO(RIGT,FOT);
+
+% Strain
+EPST = CHAMELEM.EPSI(MO1,USOL,MA1);
+
+% Hook matrix
+HOOT = CHAMELEM.HOOKE(MO1,MA1);
+
+% Initialization of the CHAMELEM
+cham = CHAMELEM.CHAM_INIT(MO1);
+
+% Stresses
+STRS = CHAMELEM.COMP(MO1,1,[MA1 HOOT],EPST,cham,0);
+
+% Internal loads
+BSTRS = CHPOINT.BSIGMA(MO1,MA1,STRS);
+
+% Reaction loads
+[chp1,chp2,chp3,chp4,C] = CHPOINT.REAC(CL1,USOL);
+
+return 
 
 %% Loading
 EV1 = EVOL([0 1],[0 1],'Time','Displacement (m)');
