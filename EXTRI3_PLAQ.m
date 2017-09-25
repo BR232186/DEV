@@ -47,6 +47,7 @@ RIG1 = MATRICE('STIFF',MO1,MA1);
 RIGT = [RIG1 CL1];
 
 % Definition of a prescribed displacement
+% FOT  = CHPOINT('LABEL','L3',2,1);
 FOT  = CHPOINT('LABEL','P3',1,1);
 
 % Static analysis
