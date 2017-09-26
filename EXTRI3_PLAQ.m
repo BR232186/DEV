@@ -26,8 +26,8 @@ global options ME TP;
 options.mode = 'TRID';
 
 %% Loading of the input datafile
-% FILE  = 'tri3_plaq.mail';
-FILE  = 'tri3_plaq_T3G.mail';
+FILE  = 'tri3_plaq.mail';
+%FILE  = 'tri3_plaq_T3G.mail';
 ME = INPUT.ACQU(FILE,'MAIL');
 
 %% Definition of the model
@@ -41,14 +41,16 @@ MA1  = CHAMELEM.MATE(MO1,'youn',1,'nu',0.25,'rho',1,'epai',1);
 
 %% Boundary conditions
 % Line L1 fixed
-CL1  = MATRICE('DIRI','L1',1,2,3,4,5,6);
-CLT  = CL1;
+CL1  = MATRICE('DIRI','L1',2,3);
+CL2  = MATRICE('DIRI','P1',1,4,5,6);
+
+CLT  = [CL1 CL2];
 RIG1 = MATRICE('STIFF',MO1,MA1);
-RIGT = [RIG1 CL1];
+RIGT = [RIG1 CLT];
 
 % Definition of a prescribed displacement
 % FOT  = CHPOINT('LABEL','L3',2,1);
-FOT  = CHPOINT('LABEL','P3',1,1);
+FOT  = CHPOINT('LABEL','L3',2,1);
 
 % Static analysis
 USOL = SOLVERS.RESO(RIGT,FOT);
