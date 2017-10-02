@@ -24,7 +24,7 @@ LT = L1 ET L2 ET L3 ET L4;
 ST = SURF LT PLAN;
 *ST = ORIE ST;
 
-*TRAC ST;
+TRAC ST;
 *OPTI SORT 
 *'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\tri3_plaq.mail';
 *SORT ST;
