@@ -13,13 +13,13 @@ DENSITE 0.25;
 *******************************************************
 
 P1 = 0   0 ;
-P12= 2.5 0 ;
+P12= 1 0 ;
 P2 = 5   0 ;
 P3 = 5   1 ;
 P34= 2.5 1 ;
 P4 = 0   1 ;
 
-L1 =  DROI P1 P12;
+L1 =  DROI P1 2 P12;
 L12 = DROI P12 P2;
 L2 =  DROI P2 P3;
 L3 =  DROI P3 P34;
@@ -31,14 +31,19 @@ ST = SURF LT PLAN;
 
 ST = ORIE ST;
 
-TRAC ST;
-OPTI SORT 
-'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\reprise.mail';
-SORT ST;
-FIN;
+*TRAC ST;
+*OPTI SORT 
+*'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\reprise.mail';
+*SORT ST;
+*FIN;
 
-MO1 = MODE ST MECANIQUE ELASTIQUE ISOTROPE DST;
-MA1 = MATE MO1 YOUN 1 NU 0.25 RHO 1 EPAI 1;
+MO1 = MODE ST MECANIQUE ELASTIQUE ISOTROPE ;
+MA1 = MATE MO1 YOUN 1 NU 0.25 RHO 1 ;
+
+PRES1 = PRES 'MASS' MO1 1.0 L1;
+
+OPTI DONN 5;
+ 
 
 HO  = HOOK MO1 MA1;
 
