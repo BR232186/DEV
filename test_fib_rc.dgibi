@@ -1,0 +1,90 @@
+* Options
+OPTI DIME 2 ELEM QUA4 EPSILON LINEAIRE;
+DENS 0.1;
+
+* Points beton
+P1  = -0.5 -0.5;
+P2  =  0.5 -0.5;
+P3  =  0.5  0.5;
+P4  = -0.5  0.5;
+
+* Points aciers
+PI1 = -0.4 -0.4;
+PI2 =  0.4 -0.4;
+PS1 = -0.4  0.4;
+PS2 =  0.4  0.4;
+
+* Lignes
+L1  = DROI 1 P1 P2;
+L2  = DROI P2 P3;
+L3  = DROI 1 P3 P4;
+L4  = DROI P4 P1;
+LT  = L1 ET L2 ET L3 ET L4;
+
+SBET= DALL L1 L2 L3 L4 PLAN;
+TRAC SBET;
+
+OPTI DIME 3;
+
+* Modele sections
+MO1 = MODE SBET MECANIQUE ELASTIQUE QUAS;
+MA1 = MATE MO1 'YOUN' 36000e6  'NU' 0.2 'ALPY' (5 / 6) 'ALPZ' (5 / 6);
+
+MO2 = MODE (PI1 ET PI2) MECANIQUE ELASTIQUE POJS;
+MA2 = MATE MO2 'YOUN' 210000E6  'NU' 0.3 'ALPY' (5 / 6) SECT 1.0e-3
+'ALPZ' (5 / 6);
+
+MO3 = MODE (PS1 ET PS2) MECANIQUE ELASTIQUE POJS;
+MA3 = MATE MO3 'YOUN' 210000E6  'NU' 0.3 'ALPY' (5 / 6) SECT 1.0e-3
+'ALPZ' (5 / 6);
+
+modsTOT= MO1 ET MO2 ET MO3;
+matsTOT= MA1 ET MA2 ET MA3;
+
+* Options
+OPTI DIME 3 ELEM SEG2;
+Q1 = 0 0 0;
+Q2 = 1 0 0;
+Q3 = 2 0 0;
+
+LQ1 = DROI Q1 Q2;
+LQ2 = DROI Q2 Q3;
+LQT = LQ1 ET LQ2;
+
+modpout = MODE LQT MECANIQUE ELASTIQUE SECTION PLASTIQUE SECTION TIMO;
+matpout = MATE modpout 'MODS' modsTOT 'MATS' matsTOT 'VECT' (0 1 0);
+
+* Conditions aux limites
+CL1 = BLOQ UY UZ RX RY RZ LQT;
+*CL2 = BLOQ DEPL ROTA Q3;
+CL3 = BLOQ UX Q3;
+*CL4 = BLOQ RX UY LQT;
+*CLT = CL1 ET CL2 ET CL3 ET CL4;
+CLT = CL1 ET CL3;
+
+* Chargement 
+EV1  = EVOL MANU (PROG 0 1) (PROG 0 1);
+FO1  = DEPI CL3 1.0 ;
+chpzm = CHAR DIMP FO1 EV1;
+
+* Temps calculés
+tcalc = PROG 0 PAS 0.01 1;
+
+* Pasapas
+TAB1 = TABLE;
+TAB1 . BLOCAGES_MECANIQUES = CLT;
+TAB1 . MODELE              = modpout;
+TAB1 . CARACTERISTIQUES    = matpout;
+TAB1 . CHARGEMENT          = chpzm ;
+TAB1 . MOVA                = RIEN   ;
+TAB1 . TEMPS_CALCULES      = tcalc  ;
+PASAPAS TAB1;
+
+
+
+
+
+FIN;
+
+ 
+

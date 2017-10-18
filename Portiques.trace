@@ -1,0 +1,107 @@
+*************************************************                       
+* Options générales                                                     
+*************************************************                       
+OPTI DIME 2 ELEM TRI3 MODE PLAN CONT;                                   
+OPTI EPSILON LINEAIRE;                                                  
+DENS 0.025;                                                             
+                                                                        
+*************************************************                       
+* Parametres geometriques                                               
+*************************************************                       
+H1 = 0.2;                                                               
+H2 = 0.2;                                                               
+H3 = 0.2;                                                               
+H4 = 1.0;                                                               
+H5 = 1.0;                                                               
+H6 = 1.0;                                                               
+                                                                        
+* Masse étage 1                                                         
+Met1 = 7.5e3;                                                           
+                                                                        
+* Masse étage 2                                                         
+Met2 = 7.5e3;                                                           
+                                                                        
+*************************************************                       
+* Parametres matériaux                                                  
+*************************************************                       
+                                                                        
+* Module d'Young                                                        
+Ecol   = 36000e6;                                                       
+Epou   = 28000e6;                                                       
+                                                                        
+* Coefficient de Poission                                               
+NUcol  = 0.2;                                                           
+NUpou  = 0.2;                                                           
+                                                                        
+* Masse volumique                                                       
+RHOpor = 2500;                                                          
+                                                                        
+*************************************************                       
+* Maillage                                                              
+*************************************************                       
+* Points                                                                
+P1  = (H1) (0);                                                         
+P2  = (0)  (0);                                                         
+P3  = (0)  (H3 + H4 + H2 + H5);                                         
+P4  = (H1 + H6 + H1) (H3 + H4 + H2 + H5);                               
+P5  = (H1 + H6 + H1) (0);                                               
+P6  = (H1 + H6) (0);                                                    
+P7  = (H1 + H6) (H5);                                                   
+P8  = (H1) (H5);                                                        
+P9  = (H1) (H5 + H2);                                                   
+P10 = (H1 + H6) (H5 + H2);                                              
+P11 = (H1 + H6) (H5 + H2 + H4);                                         
+P12 = (H1) (H5 + H2 + H4);                                              
+P13 = (H1) (H3 + H4 + H2 + H5);                                         
+P14 = (H1 + H6) (H3 + H4 + H2 + H5);                                    
+                                                                        
+* Droites                                                               
+L1  = DROI P1  P2;                                                      
+L2  = DROI P2  P3;                                                      
+L3  = DROI P3  P13;                                                     
+L4  = DROI P13 P12;                                                     
+L5  = DROI P12 P9;                                                      
+L6  = DROI P9  P8;                                                      
+L7  = DROI P8  P1;                                                      
+LT1 = L1 ET L2 ET L3 ET L4 ET                                           
+      L5 ET L6 ET L7;                                                   
+                                                                        
+L8  = DROI P14 P4;                                                      
+L9  = DROI P4  P5;                                                      
+L10 = DROI P5  P6;                                                      
+L11 = DROI P6  P7;                                                      
+L12 = DROI P7  P10;                                                     
+L13 = DROI P10 P11;                                                     
+L14 = DROI P11 P14;                                                     
+LT2 = L8 ET L9 ET L10 ET L11 ET                                         
+      L12 ET L13 ET L14;                                                
+                                                                        
+L15 = DROI P13 P14;                                                     
+L16 = DROI P11 P12;                                                     
+LT3 = L15 ET L14 ET L16 ET L4;                                          
+                                                                        
+L17 = DROI P9 P10;                                                      
+L18 = DROI P8 P7;                                                       
+LT4 = L17 ET L12 ET L18 ET L6;                                          
+                                                                        
+* Surfaces                                                              
+S1 = SURF LT1 PLAN;                                                     
+S1 = S1 COUL ROUG;                                                      
+S1 = ORIE S1;                                                           
+S2 = SURF LT2 PLAN;                                                     
+S2 = S2 COUL VERT;                                                      
+S2 = ORIE S2;                                                           
+S3 = SURF LT3 PLAN;                                                     
+S3 = S3 COUL JAUN;                                                      
+S3 = ORIE S3;                                                           
+S4 = SURF LT4 PLAN;                                                     
+S4 = S4 COUL CYAN;                                                      
+S4 = ORIE S4;                                                           
+STOT = S1 ET S2 ET S3 ET S4;                                            
+STOT = ORIE STOT;                                                       
+OPTI SORT                                                               
+'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\portique.mail';         
+SORT STOT;                                                              
+TRAC STOT;                                                              
+OPTI DONN 5;                                                            
+fin;                                                                    

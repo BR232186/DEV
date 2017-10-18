@@ -1,0 +1,126 @@
+* Options
+OPTI DIME 2 ELEM QUA4 EPSILON LINEAIRE;
+DENS 0.1;
+
+* Parametre geometriques
+Happui   = 1.50;
+Htot     = Happui +(2.*0.15);
+phiacier = phi12;
+secacier = sec12;
+hgthc    = 0.20;
+wdthc    = 0.10;
+epenro   = 0.020;
+sec6     = 3.14159*((0.006**2)/4.);
+sec12    = 3.14159*((0.012**2)/4.);
+
+* Maillage acier
+CA1      = (((-0.5)*wdthc) + epenro) ((-0.5*hgthc) + epenro) ;
+CA2      = ((0.5*wdthc) - epenro) ((-0.5*hgthc) + epenro) ;
+SAINF    = CA1 ET CA2;
+ 
+CA3      = (((-0.5)*wdthc) + epenro) ((0.5*hgthc) - epenro) ;
+CA4      = ((0.5*wdthc) - epenro) ((0.5*hgthc) - epenro) ;
+SASUP    = CA3 ET CA4;
+
+SACIER   = (SAINF COUL ROSE) et (SASUP COUL ROUGE);
+
+* Maillage coffrage
+pbc1  = (-0.5*wdthc) (-0.5*hgthc);
+pbc2  = (-0.5*wdthc) ( 0.5*hgthc);
+vbc3  =  wdthc         0.000;
+
+SBET  = DROI 8 pbc1 pbc2 TRAN 1 vbc3;
+SBET  = ORIE SBET;
+
+* Graphic outputs
+TRAC (sbet et sacier);
+OPTI SORT 
+'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\sec_bet_2.mail';
+STOT = SBET et sacier;
+SORT STOT;
+
+* Models
+OPTI DIME 3;
+modBC = MODE SBET MECANIQUE ELASTIQUE PLASTIQUE MAZARS QUAS;
+matBC = MATE modBC 'YOUN' 36000e6 NU 0.2 ATRA 0.8 ACOM 1.2 BTRA
+12000 BETA 1.06 BCOM 1500 KTR0 1.0e-4;
+carBC = CARA modBC ALPY (.83) ALPZ (.83);
+
+modAINF = MODE SAINF MECANIQUE ELASTIQUE PLASTIQUE PARFAIT_UNI POJS;
+matAINF = MATE modAINF YOUN 2.0E11 NU 0.3 RHO 7100 
+          'SECT' sec12 'SIGY' 500e6 H (0.01 * 2.0E11); 
+carAINF = CARA modAINF ALPY (.83) ALPZ (.83);
+
+modASUP = MODE SASUP MECANIQUE ELASTIQUE PLASTIQUE PARFAIT_UNI POJS;
+matASUP = MATE modASUP YOUN 2.0E11 NU 0.3 RHO 7100 
+          'SECT' sec6 'SIGY' 500e6 H (0.01 * 2.0E11); 
+carASUP = CARA modASUP ALPY (.83) ALPZ (.83);
+
+modstot = modBC ET modAINF et modASUP;
+matstot = matBC ET carBC ET matAINF ET carAINF 
+        ET matASUP ET carASUP;
+
+p0 =   0. 0. 0.;
+p1d = (0.5*Happui) 0. 0.;
+p2d = (0.5*Htot) 0. 0.;
+p1g = (-0.5*Happui) 0. 0.;
+p2g = (-0.5*Htot) 0. 0.;
+
+n1  = 1;
+n2  = 3;
+LT  = (DROI n1 p2g p1g) et (DROI n2 p1g p0 )
+   et (DROI n2 p0 p1d ) et (DROI n1 p1d p2d);
+
+OPTI SORT 
+'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\sec_pout_2.mail';
+SORT LT;
+
+* Models and materials
+modpout = MODE LT MECANIQUE ELASTIQUE SECTION PLASTIQUE SECTION TIMO;
+matpout = MATE modpout MODS modstot MATS matstot VECT (0 1 0);
+cl1     = bloq depl rota p1g;
+cl2     = bloq UY UZ     p1d ;
+cl3     = bloq UY p0;
+
+* Loading
+fo1     = DEPI CL3 1.0;
+ev1     = EVOL MANU (prog 0 1) (prog 0 1.0e-2);
+chpzm   = char DIMP FO1 ev1;
+
+TAB1 = TABLE;
+TAB1 . TEMPS_CALCULES      = prog 0 PAS 1.0e-2 1.0;
+TAB1 . BLOCAGES_MECANIQUES = cl1 et cl2 et cl3;
+TAB1 . MODELE              = modpout;
+TAB1 . CARACTERISTIQUES    = matpout;
+TAB1 . CHARGEMENT          = chpzm ;
+TAB1 . PRECISION           = 1.E-4  ;
+TAB1 . MOVA                = RIEN   ;
+ 
+PASAPAS TAB1;
+
+ev2 = @global tab1 ev1 cl3 fy;
+@excel1 ev2 
+'C:\Users\BR232186\Desktop\CastLab_OOP\DEV_SYNC\EX38.txt';
+dess ev2;
+
+
+dep0 = tab1.deplacements.1;
+var0 = tab1.variables_internes.1;
+
+tabtrac = table;
+tabtrac. 'DEPLACEMENTS' = table;
+tabtrac. 'VAIS' = table;
+tabtrac. 'VONS' = table;
+depj  = dep0;
+varj  =  var0;
+tabtrac. 'DEPLACEMENTS' . 1 =depj;
+tabtrac. 'VAIS' . 1 = exco varj 'VAIS';
+tabtrac. 'VONS' . 1 = exco varj 'VONS';
+mesh3D = pout2mas modpout matpout gauss tabtrac;
+list tabtrac.vons_3D.1;
+opti donn 5;
+
+
+
+
+
